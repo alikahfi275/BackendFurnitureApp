@@ -26,7 +26,9 @@ module.exports = {
   loginUser: async (req, res) => {
     try {
       const user = await User.findOne({ email: req.body.email });
-      !user && res.status(401).json("Wrong credentials provide a valid email");
+      if (!user) {
+        return res.status(401).json("Wrong credentials provide a valid email");
+      }
 
       const decryptedPassword = CryptoJs.AES.decrypt(
         user.password,
@@ -35,8 +37,9 @@ module.exports = {
 
       const decryptedpass = decryptedPassword.toString(CryptoJs.enc.Utf8);
 
-      decryptedpass !== req.body.password &&
-        res.status(401).json("Wrong Password");
+      if (decryptedpass !== req.body.password) {
+        return res.status(401).json("Wrong Password");
+      }
 
       const userToken = jwt.sign(
         {
